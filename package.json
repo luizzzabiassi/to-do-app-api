@@ -1,0 +1,14 @@
+{
+  "name": "express-install",
+  "version": "1.0.0",
+  "description": "Pacote express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luiza",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
