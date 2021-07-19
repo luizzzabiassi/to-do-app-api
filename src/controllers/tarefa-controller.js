@@ -1,8 +1,19 @@
 const Task = require("../models/tarefa-model")
+const TaskDao = require("../dao/TaskDao")
 
 module.exports = (app, db) => {
+    let taskBanco = new TaskDao(db)
     app.get('/tasks', (req, res) => {
-        db.all("select * from TAREFAS", (err, rows) => {
+        taskBanco.getAllTasks().then(rows => {
+            res.json({
+                result: rows,
+                count: rows.length
+            })
+        })
+        .catch(err => {
+            res.json({err})
+        })
+        /*db.all("select * from TAREFAS", (err, rows) => {
             if(err){
                 res.json({
                     message: "Erro ao obter tarefas.",
@@ -15,7 +26,7 @@ module.exports = (app, db) => {
                     count: rows.length
                 })
             }
-        })
+        })*/
     })
 
     app.get('/tasks/:titulo', (req, res) => {
@@ -50,11 +61,25 @@ module.exports = (app, db) => {
     app.post('/tasks', (req, res) => {
         const {titulo, descricao, status, data_criacao} = req.body
         let newTask = new Task(titulo, descricao, status, data_criacao)
-        db.tasks.push(newTask)
+        db.run(`INSERT INTO TAREFAS VALUES(?, ?, ?, ?, ?, ?)`, [null, newTask.titulo, newTask.descricao, newTask.status, newTask.data_criacao, 1], err => {
+            if(err){
+                res.json({
+                    message: "Erro ao criar tarefa.",
+                    error: true
+                })
+            }
+            else{
+                res.json({
+                    message: "Tarefa criada com sucesso.",
+                    error: false
+                })
+            }
+        })
+        /*db.tasks.push(newTask)
         res.json({
             message: 'Tarefa criada com sucesso.',
             error: false
-        })
+        })*/
     })
 
     app.put('/tasks/:titulo', (req, res) => {

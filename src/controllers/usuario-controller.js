@@ -1,8 +1,19 @@
 const User = require("../models/usuario-model")
+const UserDao = require("../dao/UserDao")
 
 module.exports = (app, db) => {
+    let userBanco = new UserDao(db) 
     app.get('/users', (req, res) => {
-        db.all("select * from USUARIOS", (err, rows) => {
+        userBanco.getAllUsers().then(rows => {
+            res.json({
+                result: rows,
+                count: rows.length
+            })
+        })
+        .catch(err => {
+            res.json({err})
+        })
+        /*db.all("select * from USUARIOS", (err, rows) => {
             if(err){
                 res.json({
                     message: "Erro ao obter usuários.",
@@ -15,7 +26,7 @@ module.exports = (app, db) => {
                     count: rows.length
                 })
             }
-        })
+        })*/
     })
 
     app.get('/users/:email', (req, res) => {
@@ -50,12 +61,26 @@ module.exports = (app, db) => {
     app.post('/users', (req, res) => {
         const {nome, email, senha} = req.body
         let newUser = new User(nome, email, senha)
-        db.users.push(newUser)
+        db.run(`INSERT INTO USUARIOS VALUES(?, ?, ?, ?)`, [null, newUser.nome, newUser.email, newUser.senha], err => {
+            if(err){
+                res.json({
+                    message: "Erro ao criar usuário.",
+                    error: true
+                })
+            }
+            else{
+                res.json({
+                    message: "Usuário criado com sucesso.",
+                    error: false
+                })
+            }
+        })
+        /*db.users.push(newUser)
         console.log(req.body);
         res.json({
             message: 'Usuário criado com sucesso.',
             error: false
-        })
+        })*/
     })
 
     app.put('/users/:email', (req, res) => {
