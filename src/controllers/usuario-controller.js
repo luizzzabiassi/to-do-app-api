@@ -2,14 +2,24 @@ const User = require("../models/usuario-model")
 
 module.exports = (app, db) => {
     app.get('/users', (req, res) => {
-        res.json({
-            result: db.users,
-            count: db.users.length
+        db.all("select * from USUARIOS", (err, rows) => {
+            if(err){
+                res.json({
+                    message: "Erro ao obter usuários.",
+                    error: true
+                })
+            }
+            else{
+                res.json({
+                    result: rows,
+                    count: rows.length
+                })
+            }
         })
     })
 
     app.get('/users/:email', (req, res) => {
-        let arrayResp = db.users.filter((element) => {
+        let arrayResp = db.users.filter(element => {
             return element.email === req.params.email
         })
         res.json({
@@ -20,7 +30,7 @@ module.exports = (app, db) => {
 
     app.delete('/users/:email', (req, res) => {
         let arrayCount = db.users.length
-        db.users = db.users.filter((element) => {
+        db.users = db.users.filter(element => {
             return element.email !== req.params.email
         })
         if(arrayCount === db.users.length){
@@ -52,7 +62,7 @@ module.exports = (app, db) => {
         const {nome, email, senha} = req.body;
         var varCount = 0;
         if(nome || email || senha){
-            db.users.forEach((element) => {
+            db.users.forEach(element => {
                 if(element.email === req.params.email){
                     if(nome){
                         element["nome"] = nome;

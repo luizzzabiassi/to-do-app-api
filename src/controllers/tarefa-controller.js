@@ -2,14 +2,24 @@ const Task = require("../models/tarefa-model")
 
 module.exports = (app, db) => {
     app.get('/tasks', (req, res) => {
-        res.json({
-            result: db.tasks,
-            count: db.tasks.length
+        db.all("select * from TAREFAS", (err, rows) => {
+            if(err){
+                res.json({
+                    message: "Erro ao obter tarefas.",
+                    error: true
+                })
+            }
+            else{
+                res.json({
+                    result: rows,
+                    count: rows.length
+                })
+            }
         })
     })
 
     app.get('/tasks/:titulo', (req, res) => {
-        let arrayResp = db.tasks.filter((element) => {
+        let arrayResp = db.tasks.filter(element => {
             return element.titulo === req.params.titulo
         })
         res.json({
@@ -20,7 +30,7 @@ module.exports = (app, db) => {
 
     app.delete('/tasks/:titulo', (req, res) => {
         let arrayCount = db.tasks.length
-        db.tasks = db.tasks.filter((element) => {
+        db.tasks = db.tasks.filter(element => {
             return element.titulo !== req.params.titulo
         })
         if(arrayCount === db.tasks.length){
@@ -51,7 +61,7 @@ module.exports = (app, db) => {
         const {titulo, descricao, status, data_criacao} = req.body;
         var varCount = 0;
         if(titulo || descricao || status || data_criacao){
-            db.tasks.forEach((element) => {
+            db.tasks.forEach(element => {
                 if(element.titulo === req.params.titulo){
                     if(titulo){
                         element["titulo"] = titulo;

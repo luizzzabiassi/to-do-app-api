@@ -8,7 +8,7 @@ const rotaTasks = require('./controllers/tarefa-controller')
 const User = require('./models/usuario-model')
 const Task = require('./models/tarefa-model')
 
-const db = require('./infra/bd')
+const db = require('./infra/sqlite-db')
 
 app.use(express.json())
 
