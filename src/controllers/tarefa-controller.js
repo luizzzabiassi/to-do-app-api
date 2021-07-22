@@ -13,79 +13,61 @@ module.exports = (app, db) => {
         .catch(err => {
             res.json({err})
         })
-        /*db.all("select * from TAREFAS", (err, rows) => {
-            if(err){
-                res.json({
-                    message: "Erro ao obter tarefas.",
-                    error: true
-                })
-            }
-            else{
-                res.json({
-                    result: rows,
-                    count: rows.length
-                })
-            }
-        })*/
     })
 
     app.get('/tasks/:titulo', (req, res) => {
-        let arrayResp = db.tasks.filter(element => {
-            return element.titulo === req.params.titulo
+        taskBanco.getTitleTask(req.params.titulo)
+        .then(rows => {
+            res.json({
+                result: rows,
+                count: rows.length
+            })
         })
-        res.json({
-            result: arrayResp,
-            count: arrayResp.length
+        .catch(err => {
+            res.json({err})
         })
     })
 
     app.delete('/tasks/:titulo', (req, res) => {
-        let arrayCount = db.tasks.length
-        db.tasks = db.tasks.filter(element => {
-            return element.titulo !== req.params.titulo
-        })
-        if(arrayCount === db.tasks.length){
-            res.json({
-                message: `Não existe tarefa com esse título: ${req.params.titulo}`,
-                error: true
-            })
-        }
-        else{
-            res.json({
-                message: `Tarefa com título: ${req.params.titulo}, foi deletada com sucesso.`,
+        taskBanco.deleteTask(req.params.titulo)
+        .then(() => {
+            res.status(200).json({
+                message: `Tarefa com título: ${req.params.titulo}, foi deletado com sucesso.`,
                 error: false
             })
-        }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                message: `Erro ao deletar tarefa com o titulo: ${req.params.titulo}.`,
+                error: true
+            })
+        })
     })
 
     app.post('/tasks', (req, res) => {
-        const {titulo, descricao, status, data_criacao} = req.body
-        let newTask = new Task(titulo, descricao, status, data_criacao)
-        db.run(`INSERT INTO TAREFAS VALUES(?, ?, ?, ?, ?, ?)`, [null, newTask.titulo, newTask.descricao, newTask.status, newTask.data_criacao, 1], err => {
-            if(err){
-                res.json({
-                    message: "Erro ao criar tarefa.",
-                    error: true
-                })
-            }
-            else{
-                res.json({
-                    message: "Tarefa criada com sucesso.",
-                    error: false
-                })
-            }
+        const { titulo, descricao, status, data_criacao, userId } = req.body
+        let newTask = new Task(titulo, descricao, status, data_criacao, userId)
+        taskBanco.insertTask(newTask)
+        .then(() => {
+            res.status(201).json({
+                message: "Tarefa criada com sucesso.",
+                error: false
+            })
         })
-        /*db.tasks.push(newTask)
-        res.json({
-            message: 'Tarefa criada com sucesso.',
-            error: false
-        })*/
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                message: "Erro ao criar tarefa.",
+                error: true
+            })
+        })
     })
 
     app.put('/tasks/:titulo', (req, res) => {
-        const {titulo, descricao, status, data_criacao} = req.body;
+        const { titulo, descricao, status, data_criacao, userId } = req.body;
         var varCount = 0;
-        if(titulo || descricao || status || data_criacao){
+        if(titulo || descricao || status || data_criacao || userId){
             db.tasks.forEach(element => {
                 if(element.titulo === req.params.titulo){
                     if(titulo){
@@ -99,6 +81,9 @@ module.exports = (app, db) => {
                     }
                     if(data_criacao){
                         element["data_criacao"] = data_criacao;
+                    }
+                    if(userId){
+                        element["userId"] = userId;
                     }
                     varCount++
                 }
