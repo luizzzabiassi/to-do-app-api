@@ -2,11 +2,11 @@
   "name": "packages-api",
   "version": "1.0.0",
   "description": "Pacotes para o ToDo App",
-  "main": "./src/app.js",
+  "main": "./src/server.js",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon ./src/app.js",
-    "start": "node ./src/app.js",
+    "dev": "nodemon ./src/server.js",
+    "start": "node ./src/server.js",
     "populate": "node ./src/infra/create-and-populate.js"
   },
   "author": "Luiza",
