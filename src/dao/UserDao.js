@@ -2,6 +2,7 @@ class UserDao{
     constructor(db){
         this.db = db;
     }
+
     getAllUsers(){
         return new Promise((resolve, reject) => {
             this.db.all(`select * from USUARIOS`, (err, rows) => {
@@ -14,9 +15,9 @@ class UserDao{
             })
         })
     }
-    getEmailUser(email){
+    getIdUser(id){
         return new Promise((resolve, reject) => {
-            this.db.all(`select * from USUARIOS where email = ?`, email, (err, rows) => {
+            this.db.get(`select * from USUARIOS where id = ?`, id, (err, rows) => {
                 if(err){
                     reject(err)
                 }
@@ -33,22 +34,67 @@ class UserDao{
                     reject(err);
                 }
                 else{
-                    resolve(true);
+                    resolve();
                 }
             })
         })
     }
-    deleteUser(email){
+    deleteUser(id){
         return new Promise((resolve, reject) => {
-            this.db.run(`delete from USUARIOS where email = ?`, email, err => {
+            this.db.run(`delete from USUARIOS where id = ?`, id, err => {
                 if(err){
                     reject(err);
                 }
                 else{
-                    resolve(true);
+                    resolve();
                 }
             })
         })
+    }
+    updateUser(id, nome, email, senha){
+        if(nome || email || senha){
+            let virgula = false;
+            let newArray = [];
+            let sql = 'UPDATE USUARIOS SET ';
+
+            if(nome){
+                sql = sql + ' NOME = ?'
+                virgula = true
+                newArray.push(nome)
+            }
+            if(email){
+                if(virgula) sql = sql  + ',EMAIL = ?'
+                else{
+                    sql = sql  + 'EMAIL = ?'
+                    virgula = true
+                }
+                newArray.push(email)
+            }
+            if(senha){
+                if(virgula) sql = sql  + ',SENHA = ?'
+                else{
+                    sql = sql  + 'SENHA = ?'
+                    virgula = true
+                }
+                newArray.push(senha)
+            }
+
+            sql = sql + 'WHERE id = ?'
+            newArray.push(id)
+            return new Promise((resolve, reject) => {
+                this.db.run(sql, newArray, err => {
+                    if(err){
+                        reject(err);
+                    }
+                    else{
+                        resolve();
+                    }
+                })
+            })
+        }
+        else{
+            throw new Error('Nenhum atributo enviado.')
+        } 
     }
 }
 

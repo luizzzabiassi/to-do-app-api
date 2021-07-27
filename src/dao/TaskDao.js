@@ -2,6 +2,7 @@ class TaskDao{
     constructor(db){
         this.db = db;
     }
+
     getAllTasks(){
         return new Promise((resolve, reject) => {
             this.db.all("select * from TAREFAS", (err, rows) => {
@@ -14,9 +15,9 @@ class TaskDao{
             })
         })
     }
-    getTitleTask(titulo){
+    getIdTask(id){
         return new Promise((resolve, reject) => {
-            this.db.all(`select * from TAREFAS where titulo = ?`, titulo, (err, rows) => {
+            this.db.get(`select * from TAREFAS where id = ?`, id, (err, rows) => {
                 if(err){
                     reject(err)
                 }
@@ -33,22 +34,67 @@ class TaskDao{
                     reject(err);
                 }
                 else{
-                    resolve(true);
+                    resolve();
                 }
             })
         })
     }
-    deleteTask(titulo){
+    deleteTask(id){
         return new Promise((resolve, reject) => {
-            this.db.run(`delete from TAREFAS where titulo = ?`, titulo, err => {
+            this.db.run(`delete from TAREFAS where id = ?`, id, err => {
                 if(err){
                     reject(err);
                 }
                 else{
-                    resolve(true);
+                    resolve();
                 }
             })
         })
+    }
+    updateTask(id, titulo, descricao, status){
+        if(titulo || descricao || status){
+            let virgula = false
+            let newArray = []
+            let sql = 'UPDATE TAREFAS SET '
+            
+            if(titulo){
+                sql = sql + ' TITULO = ?'
+                virgula = true
+                newArray.push(titulo)
+            }
+            if(descricao){
+                if(virgula) sql = sql  +',DESCRICAO = ?'
+                else{
+                    sql = sql  +'DESCRICAO = ?'
+                    virgula = true
+                }
+                newArray.push(descricao)
+            }
+            if(status){
+                if(virgula) sql = sql  +',STATUS = ?'
+                else{
+                    sql = sql  +'STATUS = ?'
+                    virgula = true
+                }
+                newArray.push(status)
+            }
+
+            sql = sql + 'WHERE id = ?'
+            newArray.push(id)
+            return new Promise((resolve, reject) => {
+                this.db.run(sql, newArray, err => {
+                    if(err){
+                        reject(err);
+                    }
+                    else{
+                        resolve();
+                    }
+                })
+            })
+        }
+        else{
+            throw new Error('Nenhum atributo enviado.')
+        }
     }
 }
 
